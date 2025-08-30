@@ -9,5 +9,9 @@ data class Recipe(
     val rating: Double,
     val difficulty: String,
     val tags: List<String>,
-    val image: String
+    @Json(name = "image")
+    val imageUrl: String,
+    val ingredients: List<String>,
+    val instructions: List<String>,
+    val prepTimeMinutes: Int
 )
