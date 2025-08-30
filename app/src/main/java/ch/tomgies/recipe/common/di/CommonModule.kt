@@ -11,6 +11,8 @@ import ch.tomgies.recipe.domain.usecase.LoadNextRecipesPageUseCase
 import ch.tomgies.recipe.domain.usecase.LoadNextRecipesPageUseCaseImpl
 import ch.tomgies.recipe.domain.usecase.ReloadRecipesUseCase
 import ch.tomgies.recipe.domain.usecase.ReloadRecipesUseCaseImpl
+import ch.tomgies.recipe.domain.usecase.SearchRecipesUseCase
+import ch.tomgies.recipe.domain.usecase.SearchRecipesUseCaseImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,6 +35,9 @@ object CommonModule {
 
     @Provides
     fun provideReloadRecipesUseCase(impl: ReloadRecipesUseCaseImpl): ReloadRecipesUseCase = impl
+
+    @Provides
+    fun provideSearchRecipesUseCase(impl: SearchRecipesUseCaseImpl): SearchRecipesUseCase = impl
 
     @Provides
     @Singleton

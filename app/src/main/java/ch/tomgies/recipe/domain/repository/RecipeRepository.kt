@@ -7,4 +7,5 @@ interface RecipeRepository {
     val recipes: Flow<List<Recipe>>
     suspend fun loadNextPage()
     suspend fun reload()
+    suspend fun search(query: String)
 }
