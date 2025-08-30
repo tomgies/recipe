@@ -56,6 +56,13 @@ dependencies {
     kapt(libs.dagger.hilt.android.compiler)
     implementation(libs.dagger.hilt.navigation.compose)
 
+    // Network
+    implementation(libs.retrofit2.retrofit)
+    implementation(libs.retrofit2.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.okhttp3.okhttp)
+    implementation(libs.okhttp3.logging)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

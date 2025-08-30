@@ -1,5 +1,8 @@
 package ch.tomgies.recipe.common.di
 
+import android.app.Application
+import android.content.Context
+import ch.tomgies.recipe.data.api.RecipesApi
 import ch.tomgies.recipe.data.repository.RecipeRepositoryImpl
 import ch.tomgies.recipe.domain.repository.RecipeRepository
 import ch.tomgies.recipe.domain.usecase.GetRecipesUseCase
@@ -16,7 +19,11 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object HiltModule {
+object CommonModule {
+
+    @Provides
+    @Singleton
+    fun provideApplicationContext(application: Application): Context = application
 
     @Provides
     fun provideGetRecipesUseCase(impl: GetRecipesUseCaseImpl): GetRecipesUseCase = impl
@@ -29,5 +36,5 @@ object HiltModule {
 
     @Provides
     @Singleton
-    fun provideRecipeRepository(): RecipeRepository = RecipeRepositoryImpl()
+    fun provideRecipeRepository(api: RecipesApi): RecipeRepository = RecipeRepositoryImpl(api)
 }

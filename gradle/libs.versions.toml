@@ -14,6 +14,12 @@ composeBom = "2025.08.01"
 daggerHilt = "2.57.1"
 daggerHiltNav = "1.2.0"
 
+retrofit = "3.0.0"
+retrofitMoshi = "3.0.0"
+moshiKotlin = "1.15.2"
+okhttp3Okhttp = "5.1.0"
+okhttp3Logging = "5.1.0"
+
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
@@ -38,6 +44,14 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "daggerHilt" }
 dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "daggerHilt" }
 dagger-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "daggerHiltNav" }
+
+# Network
+retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit"}
+retrofit2-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofitMoshi"}
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlin"}
+okhttp3-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3Okhttp" }
+okhttp3-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp3Logging" }
+
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

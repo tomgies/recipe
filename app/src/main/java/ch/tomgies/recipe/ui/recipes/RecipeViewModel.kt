@@ -18,14 +18,14 @@ class RecipeViewModel @Inject constructor(
     private val reloadRecipesUseCase: ReloadRecipesUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<RecipeUiState>(RecipeUiState.LoadingState)
+    private val _uiState = MutableStateFlow(RecipeUiState())
     val uiState: StateFlow<RecipeUiState> = _uiState
 
     init {
         viewModelScope.launch {
             getRecipesUseCase()
                 .collect { newRecipeList ->
-                    _uiState.emit(RecipeUiState.DataState(recipes = newRecipeList, isLoadingPage = false))
+                    _uiState.emit(RecipeUiState(recipes = newRecipeList, isLoadingMore = false))
                 }
         }
         reloadRecipes()
@@ -33,17 +33,16 @@ class RecipeViewModel @Inject constructor(
 
     fun reloadRecipes() {
         viewModelScope.launch {
+            _uiState.value = uiState.value.copy(isReloading = true)
             reloadRecipesUseCase()
         }
     }
 
     fun loadMoreRecipes() {
         viewModelScope.launch {
-            when(val state = _uiState.value) {
-                is RecipeUiState.DataState -> _uiState.value = state.copy(isLoadingPage = true)
-                else -> _uiState.value = RecipeUiState.DataState(recipes = state.recipes, isLoadingPage = true)
-            }
+            _uiState.value = uiState.value.copy(isLoadingMore = true)
             loadNextRecipesPageUseCase()
+            _uiState.value = uiState.value.copy(isLoadingMore = false)
         }
     }
 }

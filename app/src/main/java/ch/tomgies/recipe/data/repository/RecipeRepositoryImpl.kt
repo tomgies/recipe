@@ -1,14 +1,17 @@
 package ch.tomgies.recipe.data.repository
 
+import ch.tomgies.recipe.data.api.RecipesApi
 import ch.tomgies.recipe.domain.entity.Recipe
 import ch.tomgies.recipe.domain.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class RecipeRepositoryImpl() : RecipeRepository {
+class RecipeRepositoryImpl @Inject constructor(
+    private val recipesApi: RecipesApi
+) : RecipeRepository {
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     override val recipes: Flow<List<Recipe>> = _recipes
 
@@ -19,17 +22,16 @@ class RecipeRepositoryImpl() : RecipeRepository {
     }
 
     override suspend fun reload() {
-        val recipes = fetchRecipesFromServer(skip = 0, limit = 10)
+        val recipes = fetchRecipesFromServer(skip = 0, limit = 20)
         _recipes.emit(recipes)
     }
 
     private suspend fun fetchRecipesFromServer(skip: Int, limit: Int): List<Recipe> {
-        delay(500)
-        val newElements = mockData.drop(skip).take(limit)
-        return newElements
-    }
-
-    private val mockData = (1..100).map { id ->
-        Recipe(id, "Classic Margherita Pizza", 4.6, "Easy", listOf("Pizza", "Italian"))
+        val response = recipesApi.getRecipes(limit = limit, skip = skip)
+        return if (response.isSuccessful && response.body()!= null) {
+            response.body()!!.recipes
+        } else {
+            emptyList()
+        }
     }
 }
