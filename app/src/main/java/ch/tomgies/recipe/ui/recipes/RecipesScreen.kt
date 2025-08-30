@@ -1,10 +1,12 @@
 package ch.tomgies.recipe.ui.recipes
 
+import RecipeDetailBottomSheet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,20 +15,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -41,23 +39,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ch.tomgies.recipe.R
 import ch.tomgies.recipe.domain.entity.Recipe
-import ch.tomgies.recipe.ui.theme.Yellow
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
@@ -92,7 +85,7 @@ private fun RecipesScreen(
         modifier = Modifier
     ) {
 
-        ListWithPagination(
+        PaginatedList(
             uiState = uiState,
             loadMoreRecipes = loadMoreRecipes,
             showRecipeDetail = { showRecipeDetail = it }
@@ -109,86 +102,19 @@ private fun RecipesScreen(
         )
     }
 
-
     showRecipeDetail?.let { recipe ->
-        ModalBottomSheet(
-            onDismissRequest = { showRecipeDetail = null }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                AsyncImage(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(recipe.imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentScale = ContentScale.FillWidth,
-                    contentDescription = recipe.title,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.End,
-                    text = recipe.title,
-                    style = MaterialTheme.typography.displayMedium
-                )
-                Spacer(Modifier.height(16.dp))
-
-                Row {
-                    Icon(
-                        imageVector = Icons.Outlined.Timer,
-                        contentDescription = null,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(text = stringResource(R.string.recipes_detail_prep_time, recipe.prepTimeMinutes))
-                }
-                Spacer(Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(R.string.recipes_detail_ingredients),
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                recipe.ingredients.forEach {
-                    Row {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = Yellow,
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(text = it)
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(R.string.recipes_detail_instructions_title),
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                recipe.instructions.forEachIndexed { index, instruction ->
-                    Row {
-                        Text(
-                            text = stringResource(R.string.recipes_detail_instruction_step, index+1)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(text = instruction)
-                    }
-                }
-            }
-        }
+        RecipeDetailBottomSheet(recipe = recipe, onDismiss = { showRecipeDetail = null })
     }
 }
 
 @Composable
-fun ListWithPagination(uiState: RecipeUiState, loadMoreRecipes: () -> Unit, showRecipeDetail: (Recipe) -> Unit) {
+fun PaginatedList(uiState: RecipeUiState, loadMoreRecipes: () -> Unit, showRecipeDetail: (Recipe) -> Unit) {
     val listState = rememberLazyListState()
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
         state = listState,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -241,27 +167,60 @@ fun ListWithPagination(uiState: RecipeUiState, loadMoreRecipes: () -> Unit, show
 
 @Composable
 fun ListItem(recipe: Recipe, showRecipeDetail: (Recipe) -> Unit) {
-    Row(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
-            .clickable {
-                showRecipeDetail(recipe)
-            }
+            .height(200.dp)
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(recipe.imageUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = recipe.title,
-        )
-        Text(
-            text= recipe.title,
-            style = MaterialTheme.typography.titleMedium
-        )
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clickable { showRecipeDetail(recipe) }
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxHeight(),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(recipe.imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = recipe.title,
+                contentScale = ContentScale.FillHeight
+            )
+            Spacer(Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(3f)) {
+                Text(
+                    text = recipe.title,
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        modifier = Modifier.width(20.dp),
+                        imageVector = Icons.Default.StarRate,
+                        contentDescription = Icons.Default.StarRate.name,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = recipe.rating.toString(),
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        modifier = Modifier.width(20.dp),
+                        imageVector = Icons.Default.Speed,
+                        contentDescription = Icons.Default.Speed.name,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = recipe.difficulty)
+                }
+                Spacer(Modifier.weight(1f))
+                Text(text = recipe.tags.joinToString())
+            }
+        }
     }
-    HorizontalDivider()
+    Spacer(Modifier.height(16.dp))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

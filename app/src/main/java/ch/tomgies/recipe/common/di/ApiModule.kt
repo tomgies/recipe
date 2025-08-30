@@ -13,8 +13,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -28,14 +28,15 @@ object ApiModule {
     @Singleton
     fun provideOkHttpClient(
     ): OkHttpClient {
-        val networkTimeoutInSec = 20L
+        val networkTimeout = 20.seconds
         val logger = HttpLoggingInterceptor()
         logger.level = HttpLoggingInterceptor.Level.BODY
 
         return OkHttpClient.Builder()
-            .connectTimeout(networkTimeoutInSec, TimeUnit.SECONDS)
-            .readTimeout(networkTimeoutInSec, TimeUnit.SECONDS)
-            .writeTimeout(networkTimeoutInSec, TimeUnit.SECONDS)
+            .connectTimeout(networkTimeout)
+            .connectTimeout(networkTimeout)
+            .readTimeout(networkTimeout)
+            .writeTimeout(networkTimeout)
             .addInterceptor(logger)
             .build()
     }
