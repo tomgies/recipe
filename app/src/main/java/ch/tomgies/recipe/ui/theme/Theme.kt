@@ -1,4 +1,4 @@
-package ch.tomgies.recipeapp.ui.theme
+package ch.tomgies.recipe.ui.theme
 
 import android.app.Activity
 import android.os.Build
