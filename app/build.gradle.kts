@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "ch.tomgies.recipe"
+    namespace = "ch.tomgies.recipeapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "ch.tomgies.recipe"
+        applicationId = "ch.tomgies.recipeapp"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

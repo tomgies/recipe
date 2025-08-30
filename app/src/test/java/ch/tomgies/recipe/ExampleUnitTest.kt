@@ -1,4 +1,4 @@
-package ch.tomgies.recipe
+package ch.tomgies.recipeapp
 
 import org.junit.Test
 
