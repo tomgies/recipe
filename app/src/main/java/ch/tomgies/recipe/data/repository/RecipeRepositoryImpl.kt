@@ -1,6 +1,5 @@
 package ch.tomgies.recipe.data.repository
 
-import android.util.Log
 import ch.tomgies.recipe.data.api.RecipesApi
 import ch.tomgies.recipe.domain.entity.Recipe
 import ch.tomgies.recipe.domain.repository.RecipeRepository
@@ -15,20 +14,17 @@ class RecipeRepositoryImpl @Inject constructor(
     override val recipes: Flow<List<Recipe>> = _recipes
 
     override suspend fun reload() {
-        Log.d("MyLog", "Reload")
         val recipes = fetchRecipesFromServer(skip = 0, limit = 20)
         _recipes.emit(recipes)
     }
 
     override suspend fun loadNextPage() {
-        Log.d("MyLog", "LoadNext")
         val nextPage = fetchRecipesFromServer(skip = _recipes.value.size, limit = 10)
         val updatedElements = _recipes.value + nextPage
         _recipes.emit(updatedElements)
     }
 
     override suspend fun search(query: String) {
-        Log.d("MyLog", "Search")
         val response = recipesApi.searchRecipes(query)
         if (response.isSuccessful && response.body() != null) {
             _recipes.emit(response.body()!!.recipes)
