@@ -94,7 +94,9 @@ fun RecipeDetailBottomSheet(recipe: Recipe, onDismiss: () -> Unit) {
             recipe.instructions.forEachIndexed { index, instruction ->
                 Row {
                     Text(
-                        text = stringResource(R.string.recipes_detail_instruction_step, index + 1)
+                        text = stringResource(R.string.recipes_detail_instruction_step, index + 1),
+                        color = Yellow
+
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(text = instruction)

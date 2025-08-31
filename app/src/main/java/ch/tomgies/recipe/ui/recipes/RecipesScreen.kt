@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.StarRate
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -50,6 +53,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.tomgies.recipe.R
 import ch.tomgies.recipe.domain.entity.Recipe
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -58,12 +62,17 @@ import coil.request.ImageRequest
 fun RecipesScreen(viewModel: RecipeViewModel = hiltViewModel()) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.reloadRecipes()
+    }
+
     RecipesScreen(
         uiState = uiState.value,
         onRefresh = viewModel::refresh,
         onReload = viewModel::reloadRecipes,
         loadMoreRecipes = viewModel::loadMoreRecipes,
-        searchRecipes = viewModel::searchRecipes
+        searchRecipes = viewModel::searchRecipes,
+        resetError = viewModel::resetError
     )
 }
 
@@ -74,7 +83,8 @@ private fun RecipesScreen(
     onRefresh: (String) -> Unit = {},
     onReload: () -> Unit = {},
     loadMoreRecipes: () -> Unit = {},
-    searchRecipes: (String) -> Unit = {}
+    searchRecipes: (String) -> Unit = {},
+    resetError: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var showRecipeDetail by remember { mutableStateOf<Recipe?>(null) }
@@ -87,7 +97,7 @@ private fun RecipesScreen(
 
         PaginatedList(
             uiState = uiState,
-            loadMoreRecipes = loadMoreRecipes,
+            reachedLastListItem = { if (searchQuery.isEmpty()) loadMoreRecipes() },
             showRecipeDetail = { showRecipeDetail = it }
         )
 
@@ -105,10 +115,12 @@ private fun RecipesScreen(
     showRecipeDetail?.let { recipe ->
         RecipeDetailBottomSheet(recipe = recipe, onDismiss = { showRecipeDetail = null })
     }
+
+    ErrorDialog(uiState.error, resetError)
 }
 
 @Composable
-fun PaginatedList(uiState: RecipeUiState, loadMoreRecipes: () -> Unit, showRecipeDetail: (Recipe) -> Unit) {
+fun PaginatedList(uiState: RecipeUiState, reachedLastListItem: () -> Unit, showRecipeDetail: (Recipe) -> Unit) {
     val listState = rememberLazyListState()
 
     LazyColumn(
@@ -123,7 +135,10 @@ fun PaginatedList(uiState: RecipeUiState, loadMoreRecipes: () -> Unit, showRecip
         }
         if (uiState.recipes.isEmpty() && !uiState.isLoading) {
             item {
-                Text("No Recipes available")
+                Text(
+                    text = stringResource(R.string.recipes_not_available),
+                    style = MaterialTheme.typography.headlineLarge
+                )
             }
         }
         items(
@@ -159,7 +174,7 @@ fun PaginatedList(uiState: RecipeUiState, loadMoreRecipes: () -> Unit, showRecip
                 && lastVisibleIndex >= uiState.recipes.size - 1
                 && listIsScrollable
             ) {
-                loadMoreRecipes()
+                reachedLastListItem()
             }
         }
     }
@@ -254,7 +269,7 @@ fun RecipeSearchBar(
                     },
                     expanded = expanded,
                     onExpandedChange = { expanded = it },
-                    placeholder = { Text("Search Recipes") },
+                    placeholder = { Text(stringResource(R.string.recipes_search_hint)) },
                     trailingIcon = {
                         if (query.isNotEmpty()) {
                             IconButton(onClick = onClearSearch) {
@@ -273,9 +288,47 @@ fun RecipeSearchBar(
     }
 }
 
+@Composable
+fun ErrorDialog(error: Throwable?, onDismiss: () -> Unit) {
+    error?.let {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = stringResource(R.string.error_dialog_title),
+                    style = MaterialTheme.typography.headlineLarge
+                )
+            },
+            text = {
+                Text(text = error.message ?: stringResource(R.string.error_dialog_message_fallback))
+            },
+            confirmButton = {
+                Button(
+                    onClick = onDismiss
+                ) {
+                    Text(text = stringResource(R.string.global_ok))
+                }
+            }
+        )
+    }
+}
+
 class RecipeUiStateParamProvider : PreviewParameterProvider<RecipeUiState> {
+    companion object {
+        val PIZZA_ALFREDO = Recipe(id = 1, title = "Pizza Alfredo", rating = 10.0, difficulty = "Easy", tags = listOf("Pizza", "Mhhhh"), imageUrl = "", ingredients = listOf("Dough", "Mozzarella"), instructions = listOf("Step One", "Step Two"), prepTimeMinutes = 15)
+        val PIZZA_MARGHERITA = Recipe(id = 2, title = "Pizza Margherita", rating = 10.0, difficulty = "Easy", tags = listOf("Pizza", "Mhhhh"), imageUrl = "", ingredients = listOf("Dough", "Mozzarella"), instructions = listOf("Step One", "Step Two"), prepTimeMinutes = 15)
+    }
+
     override val values = sequenceOf(
-        RecipeUiState()
+        RecipeUiState(),
+        RecipeUiState(listOf(PIZZA_ALFREDO)),
+        RecipeUiState(
+            recipes = listOf(PIZZA_ALFREDO, PIZZA_MARGHERITA),
+            isLoading = true
+        ),
+        RecipeUiState(
+            recipes = listOf(PIZZA_ALFREDO, PIZZA_MARGHERITA),
+        ),
     )
 }
 

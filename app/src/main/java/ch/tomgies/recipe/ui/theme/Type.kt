@@ -2,12 +2,10 @@ package ch.tomgies.recipe.ui.theme
 
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.unit.sp
 import ch.tomgies.recipe.R
 
 val provider = GoogleFont.Provider(
@@ -22,12 +20,10 @@ val AmaticSCFontFamily = FontFamily(
 )
 
 val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+    titleLarge = Typography().titleLarge.copy(
+        fontFamily = AmaticSCFontFamily,
+        color = Yellow,
+        fontWeight = FontWeight.W500
     ),
     displayMedium = Typography().displayMedium.copy(
         fontFamily = AmaticSCFontFamily,
