@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Recipe</string>
+    <string name="app_name">Recipe App</string>
+    <string name="recipes_search_hint">Search recipes</string>
+    <string name="recipes_not_available">No Recipes found!</string>
+    <string name="recipes_detail_ingredients">Ingredients</string>
+    <string name="recipes_detail_instructions_title">How it\'s done</string>
+    <string name="recipes_detail_prep_time">Total: %s min.</string>
+    <string name="recipes_detail_instruction_step">%s. Step:</string>
+    <string name="error_dialog_title">Oops! An error</string>
+    <string name="error_dialog_message_fallback">Something went wrong. Please try again.</string>
+    <string name="global_ok">OK</string>
 </resources>
