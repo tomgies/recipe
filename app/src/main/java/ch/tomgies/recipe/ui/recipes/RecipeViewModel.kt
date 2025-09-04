@@ -7,12 +7,9 @@ import ch.tomgies.recipe.domain.usecase.LoadNextRecipesPageUseCase
 import ch.tomgies.recipe.domain.usecase.ReloadRecipesUseCase
 import ch.tomgies.recipe.domain.usecase.SearchRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -30,7 +27,6 @@ class RecipeViewModel @Inject constructor(
     private val loadNextRecipesPageUseCase: LoadNextRecipesPageUseCase,
     private val reloadRecipesUseCase: ReloadRecipesUseCase,
     private val searchRecipesUseCase: SearchRecipesUseCase,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     /** StateFlow UI state observation*/
@@ -40,13 +36,12 @@ class RecipeViewModel @Inject constructor(
     init {
         // start observation of the cached recipes
         viewModelScope.launch {
-            withContext(coroutineDispatcher) {
-                getRecipesUseCase()
-                    .collect { newRecipeList ->
-                        _uiState.emit(uiState.value.copy(recipes = newRecipeList))
-                    }
-            }
+            getRecipesUseCase()
+                .collect { newRecipeList ->
+                    _uiState.emit(uiState.value.copy(recipes = newRecipeList))
+                }
         }
+
     }
 
     /**
@@ -55,11 +50,9 @@ class RecipeViewModel @Inject constructor(
      */
     fun reloadRecipes() {
         viewModelScope.launch {
-            withContext(coroutineDispatcher) {
-                _uiState.value = uiState.value.copy(isLoading = true)
-                val result = reloadRecipesUseCase()
-                _uiState.value = uiState.value.copy(isLoading = false, error = result.exceptionOrNull())
-            }
+            _uiState.value = uiState.value.copy(isLoading = true)
+            val result = reloadRecipesUseCase()
+            _uiState.value = uiState.value.copy(isLoading = false, error = result.exceptionOrNull())
         }
     }
 
@@ -69,11 +62,9 @@ class RecipeViewModel @Inject constructor(
      */
     fun loadMoreRecipes() {
         viewModelScope.launch {
-            withContext(coroutineDispatcher) {
-                _uiState.value = uiState.value.copy(isLoadingMore = true)
-                val result = loadNextRecipesPageUseCase()
-                _uiState.value = uiState.value.copy(isLoadingMore = false, error = result.exceptionOrNull())
-            }
+            _uiState.value = uiState.value.copy(isLoadingMore = true)
+            val result = loadNextRecipesPageUseCase()
+            _uiState.value = uiState.value.copy(isLoadingMore = false, error = result.exceptionOrNull())
         }
     }
 
@@ -85,11 +76,9 @@ class RecipeViewModel @Inject constructor(
      */
     fun searchRecipes(query: String) {
         viewModelScope.launch {
-            withContext(coroutineDispatcher) {
-                _uiState.value = uiState.value.copy(isLoading = true)
-                val result = searchRecipesUseCase(query)
-                _uiState.value = uiState.value.copy(isLoading = false, error = result.exceptionOrNull())
-            }
+            _uiState.value = uiState.value.copy(isLoading = true)
+            val result = searchRecipesUseCase(query)
+            _uiState.value = uiState.value.copy(isLoading = false, error = result.exceptionOrNull())
         }
     }
 
@@ -102,16 +91,14 @@ class RecipeViewModel @Inject constructor(
      */
     fun refresh(query: String) {
         viewModelScope.launch {
-            withContext(coroutineDispatcher) {
-                if (query.isEmpty()) {
-                    _uiState.value = uiState.value.copy(isRefreshing = true)
-                    val result = reloadRecipesUseCase()
-                    _uiState.value = uiState.value.copy(isRefreshing = false, error = result.exceptionOrNull())
-                } else {
-                    _uiState.value = uiState.value.copy(isRefreshing = true)
-                    val result = searchRecipesUseCase(query)
-                    _uiState.value = uiState.value.copy(isRefreshing = false, error = result.exceptionOrNull())
-                }
+            if (query.isEmpty()) {
+                _uiState.value = uiState.value.copy(isRefreshing = true)
+                val result = reloadRecipesUseCase()
+                _uiState.value = uiState.value.copy(isRefreshing = false, error = result.exceptionOrNull())
+            } else {
+                _uiState.value = uiState.value.copy(isRefreshing = true)
+                val result = searchRecipesUseCase(query)
+                _uiState.value = uiState.value.copy(isRefreshing = false, error = result.exceptionOrNull())
             }
         }
     }

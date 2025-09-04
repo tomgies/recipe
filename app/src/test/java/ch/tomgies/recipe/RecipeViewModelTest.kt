@@ -27,6 +27,7 @@ import org.junit.Test
 class RecipeViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private val recipesFlow = MutableStateFlow<List<Recipe>>(emptyList())
     private lateinit var searchRecipesUseCase: SearchRecipesUseCase
     private lateinit var getRecipesUseCase: GetRecipesUseCase
     private lateinit var sut: RecipeViewModel
@@ -34,6 +35,7 @@ class RecipeViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+
         searchRecipesUseCase = mockk<SearchRecipesUseCase>(relaxed = true)
         getRecipesUseCase = mockk<GetRecipesUseCase>(relaxed = true)
         val mockLoadNext = mockk<LoadNextRecipesPageUseCase>(relaxed = true)
@@ -44,8 +46,9 @@ class RecipeViewModelTest {
             loadNextRecipesPageUseCase = mockLoadNext,
             reloadRecipesUseCase = mockReload,
             searchRecipesUseCase = searchRecipesUseCase,
-            coroutineDispatcher = testDispatcher
         )
+
+        coEvery { getRecipesUseCase() } returns recipesFlow
     }
 
     @After
@@ -55,9 +58,6 @@ class RecipeViewModelTest {
 
     @Test
     fun `given search query updates uiState correctly`() = runTest {
-        val recipesFlow = MutableStateFlow<List<Recipe>>(emptyList())
-        coEvery { getRecipesUseCase() } returns recipesFlow
-
         coEvery { searchRecipesUseCase("pizza") } coAnswers {
             recipesFlow.emit(RecipeMockData.pizzaSearchResult)
             Result.success(Unit)
